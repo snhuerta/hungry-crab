@@ -1,8 +1,7 @@
 #include <Crab.h>
 
 Crab::Crab(){
-
-
+    
 }
 
 void Crab::updateLegsSyncPlease(){
@@ -16,30 +15,30 @@ void Crab::updateLegsSyncPlease(){
         
         if(legs[i].shoulderAngle != legs[i].shoulderFutureAngle){
             if(legs[i].shoulderAngle < legs[i].shoulderFutureAngle){
-                legs[i].shoulderAngle = legs[i].shoulderAngle + 2;
+                legs[i].shoulderAngle = legs[i].shoulderAngle + 1;
                 legs[i].moveServo(legs[i].shoulderIndex, legs[i].shoulderAngle);
             }else{
-                legs[i].shoulderAngle = legs[i].shoulderAngle - 2;
+                legs[i].shoulderAngle = legs[i].shoulderAngle - 1;
                 legs[i].moveServo(legs[i].shoulderIndex, legs[i].shoulderAngle);
             }
         }
 
         if(legs[i].elbowAngle != legs[i].elbowFutureAngle){
             if(legs[i].elbowAngle < legs[i].elbowFutureAngle){
-                legs[i].elbowAngle = legs[i].elbowAngle + 2;
+                legs[i].elbowAngle = legs[i].elbowAngle + 1;
                 legs[i].moveServo(legs[i].elbowIndex, legs[i].elbowAngle);
             }else{
-                legs[i].elbowAngle = legs[i].elbowAngle - 2;
+                legs[i].elbowAngle = legs[i].elbowAngle - 1;
                 legs[i].moveServo(legs[i].elbowIndex, legs[i].elbowAngle);
             }
         }
 
         if(legs[i].wristAngle != legs[i].wristFutureAngle){
             if(legs[i].wristAngle < legs[i].wristFutureAngle){
-                legs[i].wristAngle = legs[i].wristAngle + 2;
+                legs[i].wristAngle = legs[i].wristAngle + 1;
                 legs[i].moveServo(legs[i].wristIndex, legs[i].wristAngle);
             }else{
-                legs[i].wristAngle = legs[i].wristAngle - 2;
+                legs[i].wristAngle = legs[i].wristAngle - 1;
                 legs[i].moveServo(legs[i].wristIndex, legs[i].wristAngle);
             }
         }
@@ -49,10 +48,35 @@ void Crab::updateLegsSyncPlease(){
         }
 
         
-        delay(10);
+        delay(2);
     }
 
     if(!updatingLeg[0] && !updatingLeg[1] && !updatingLeg[2] && !updatingLeg[3] && !updatingLeg[4] && !updatingLeg[5]){
             updatingLegs = false;
     }
+}
+
+void Crab::checkAllMotors(){
+    legs[0].setLegState(40,40,40);
+    legs[1].setLegState(40,40,40);
+    legs[2].setLegState(40,40,40);
+    legs[3].setLegState(40,40,40);
+    legs[4].setLegState(40,40,40);
+    legs[5].setLegState(40,40,40); 
+    
+    do{
+    updateLegsSyncPlease(); 
+    }while(updatingLegs);
+
+    legs[0].setLegState(140,140,140);
+    legs[1].setLegState(140,140,140);
+    legs[2].setLegState(140,140,140);
+    legs[3].setLegState(140,140,140);
+    legs[4].setLegState(140,140,140);
+    legs[5].setLegState(140,140,140);
+
+    do{
+    updateLegsSyncPlease(); 
+    }while(updatingLegs);
+
 }

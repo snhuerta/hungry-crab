@@ -1,8 +1,10 @@
 #ifndef __Crab
 #define __Crab
  
-#include <Arduino.h>
+#include "Mano.h"
 #include "Leg.h"
+#include <Arduino.h>
+
 
 class Crab {
     public:
@@ -18,9 +20,13 @@ class Crab {
             Leg(15,16,17,10,10,10),
         };
 
+        Mano mano;
+
         Crab();
         
         void updateLegsSyncPlease();
+        void checkAllMotors();
+        
 
 };
 
