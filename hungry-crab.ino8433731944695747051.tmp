@@ -1,0 +1,23 @@
+#include <Crab.h>
+
+Crab* pCrab = NULL;
+
+float *variables;
+
+void setup(){
+  pCrab = new Crab();
+  delay(1000);
+  Serial.begin(115200);
+
+}
+
+void loop(){
+//  pCrab->checkAllMotors();
+
+  variables = pCrab->legs[0].angFromPos(70,82,0);
+
+  Serial.print("alpha: ");
+  Serial.print(*(variables+0));
+  Serial.print("beta: ");
+  Serial.print(*(variables+1);
+}
