@@ -26,8 +26,6 @@ class Crab {
         
         void updateLegsSyncPlease();
         void checkAllMotors();
-        
-
 };
 
 #endif

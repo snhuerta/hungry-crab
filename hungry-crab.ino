@@ -8,7 +8,5 @@ void setup(){
 }
 
 void loop(){
-//  pCrab->checkAllMotors();
-
-
+  pCrab->checkAllMotors();
 }

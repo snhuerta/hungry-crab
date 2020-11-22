@@ -1,14 +1,15 @@
 #include "Leg.h"
 #include "esp32-hal-cpu.h"
+#include <cmath>
 
 Leg::Leg(int shoulderIndex, int elbowIndex, int wristIndex, int shoulderLinkLength, int elbowLinkLength, int wristLinkLength){  
-    Leg::shoulderIndex=shoulderIndex;
-    Leg::elbowIndex=elbowIndex;
-    Leg::wristIndex=wristIndex;
+    indices[0]=shoulderIndex;
+    indices[1]=elbowIndex;
+    indices[2]=wristIndex;
 
-    Leg::shoulderLinkLength=shoulderLinkLength;
-    Leg::elbowLinkLength=elbowLinkLength;
-    Leg::wristLinkLength=wristLinkLength;
+    linkLengths[0]=shoulderLinkLength;
+    linkLengths[1]=elbowLinkLength;
+    linkLengths[2]=wristLinkLength;
     
     //The speed of the CPU clock is lowered to avoid problems with the servomotor driver's I2C
     setCpuFrequencyMhz(16);
@@ -32,47 +33,42 @@ Leg::Leg(int shoulderIndex, int elbowIndex, int wristIndex, int shoulderLinkLeng
 //Set new desired state, this is a promise, the angle is not set yet
 void Leg::setLegState(int shoulderAngle, int elbowAngle, int wristAngle){
     
-    shoulderFutureAngle=shoulderAngle;
-    elbowFutureAngle=elbowAngle;
-    wristFutureAngle=wristAngle;
+    futureAngles[0]=shoulderAngle;
+    futureAngles[1]=elbowAngle;
+    futureAngles[2]=180-wristAngle;
 }
 
 //Start the leg at a determined state
 void Leg::setStart(){
-    
-    Leg::shoulderFutureAngle=90;
-    Leg::elbowFutureAngle=90;
-    Leg::wristFutureAngle=90;
+    futureAngles[0]=90;
+    futureAngles[1]=90;
+    futureAngles[2]=90;
 
     updateLegPlease();
 }
 
-//Fulfill the promise of the desired angle
+//Fulfill the promise to set the desired angle
 void Leg::updateLegPlease(){
-    
-    moveServo(Leg::shoulderIndex, Leg::shoulderFutureAngle);
-    moveServo(Leg::elbowIndex, Leg::elbowFutureAngle);
-    moveServo(Leg::wristIndex, 180-Leg::wristFutureAngle);
-    
-    //once the promise is fulfilled, the register of the current angle is updated
-    shoulderAngle = shoulderFutureAngle;
-    elbowAngle = elbowFutureAngle;
-    wristAngle = wristFutureAngle;
+    for(int i = 0; i < 3; i++){
+        moveServo(indices[i], futureAngles[i]);
+        //once the promise is fulfilled, the register of the current angle is updated
+        angles[i] = futureAngles[i];
+    }
 }
 
 //Converts the angle into a period of time the pwm servo can understand
 int Leg::pulseWidth(int angle)
 {
-  int pulse_wide, analog_value;
-  pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
-  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
-  return analog_value;
+    int pulse_wide, analog_value;
+    pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+    analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY * 4096);
+    return analog_value;
 }
 
 //Moves the servo depending on which side of the crab it is
 void Leg::moveServo(int servoID, int angle) {
     if(servoID < 9){
-        pwm1.setPWM(servoDriver[servoID], 0, pulseWidth(angle));        
+        pwm1.setPWM(servoDriver[servoID], 0, pulseWidth(angle));
     }
     
     else{
@@ -81,5 +77,8 @@ void Leg::moveServo(int servoID, int angle) {
 }
 
 void angFromPos(float x, float y, float z){
-    
+    // float l = sqrt(pow(x, 2) + pow(y,2));
+    // float alpha = atan2(y, x);
+    // float m = sqrt(pow(x,2));
+
 }
