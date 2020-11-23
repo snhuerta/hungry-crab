@@ -31,9 +31,10 @@ class Leg {
 		void updateLegPlease();
 		int pulseWidth(int angle);
 		void moveServo(int servoID, int angle);
-		float * angFromPos(float x, float y, float z);
-		float * movilityCircle(float x);
-		int * traceLine(float direction);
+		int * angFromPos(float x, float y, float z);
+		float * mobilityCircle(float x);
+		float * traceLine(float direction, float x);
+
 
 	private:
 		uint8_t servoDriver[18] = {0,2,4,6,8,10,12,14,15,0,2,4,6,8,10,12,14,15};

@@ -75,12 +75,14 @@ void Leg::moveServo(int servoID, int angle) {
     }
 }
 
-float * Leg::angFromPos(float x, float y, float z){
+int * Leg::angFromPos(float x, float y, float z){
     float l, alpha, beta, gamma, m, M, C, a, b, c;
     bool cond1 = false;
     bool cond2 = false;
-    static float results[4];
+    static int results [4] = {0,0,0,0};
     bool pos = false;
+
+    // Serial.println(x);
 
     //These varaibles are asigned so the code is easier to read
     a = linkLengths[0];
@@ -95,7 +97,7 @@ float * Leg::angFromPos(float x, float y, float z){
     
     //These are the angles corresponding to the shoulder, elbow, and wrist respectively
     alpha = atan2(y, z) * 180 / M_PI;
-    beta = (M_PI - atan2((l - a),x) - C) * 180 / M_PI;
+    beta = (M_PI - atan2((l - a),-x) - C) * 180 / M_PI;
     gamma = (M_PI - M) * 180 / M_PI;
 
     //Rounding and cleaning data
@@ -112,17 +114,18 @@ float * Leg::angFromPos(float x, float y, float z){
         pos = true;
     }
 
-    results[0] = alpha;
-    results[1] = beta;
-    results[2] = gamma;
-    results[3] = pos;
+    
+
+    results[0] = (int) alpha;
+    results[1] = (int) beta;
+    results[2] = (int) gamma;
+    results[3] = (int) pos;
 
     return results;
 }
 
-
 //A cirlce in which a leg can move for a fixed value of x is obtained
-float * Leg::movilityCircle(float x){
+float * Leg::mobilityCircle(float x){
     float alpha, beta, gamma, theta, ymin, ymax, z,d;
 
     //0 -> centerx, 1 -> centery, 2-> centerz, 3->radius
@@ -140,19 +143,20 @@ float * Leg::movilityCircle(float x){
     //We assume ymax happens when gamma = 0
     //We also are placing the circle at the center, so alpha must be 90
     gamma = 0;
-    alpha = 90;
+    alpha = M_PI / 2;
 
     //d is the third side of the triangle formed by b and c
-    d = sqrt(pow(b,2)+pow(c,2)-2*b*c*cos(180-gamma));
+    d = sqrt( pow(b,2) + pow(c,2) - 2 * b * c * cos( M_PI - gamma ) );
 
+    
     //Theta is the angle between b and d
-    theta = c/d*sin(180-gamma);
+    theta = asin( c / d * sin( M_PI - gamma ) );
 
     //analyzing the geometry the following equation is obtained
-    beta = -acos( x /(-d)) + 180 - theta;
-
+    beta = -acos( -x /(-d)) + M_PI - theta;
+    
     //Once beta is obtained, ymax can be calculated using the geometry of the robot
-    ymax = (a + d * sin(180-beta-theta))*sin(alpha);
+    ymax = (a + d * sin( M_PI - beta - theta ) ) * sin( alpha );
 
     //Then ymnin
     
@@ -163,19 +167,37 @@ float * Leg::movilityCircle(float x){
     //This value is the one recieved given that the circle is on a plane
     circleParam[0] = x;
     //This value is an average of ymin and ymax but adjusted to give it some room
-    circleParam[1] = ( ( ymin * 1.15 ) + ymax ) / 2;
+    circleParam[1] = ( ( ymin * 1.5 ) + ymax ) / 2;
     //Thjis value is equal to 0 because the circle must be centered
     circleParam[2] = 0;
 
     //Then the radio
     //This has another adjustment to give it room to work properly
-    circleParam[3] = ( ymax - ymin * 1.15 ) / 2 * 0.9;
+    circleParam[3] = ( ymax - ymin * 1.5 ) / 2 * 0.95;
 
     return circleParam;
 }
 
 //This functions traces a line inside the limits of the movility circle in the direction specified
 //direction argument is defined as 0 along the y axis,it's positive in the direction of the z axis
-int * traceLine(float direction){
-    
+float * Leg::traceLine(float direction, float x){
+
+    static float *circle;
+
+    //0 -> P1x, 1 -> P1y, 2 -> P1z
+    //3 -> P2x, 4 -> P2y, 5 -> P2z
+    // static float points[6];
+    float *points = new float[6];
+
+    direction = direction * M_PI / 180;
+    circle = mobilityCircle(x);
+
+    points[0] = *(circle+0);
+    points[1] = *(circle+3) * cos(direction) + *(circle+1);
+    points[2] = *(circle+3) * sin(direction) + *(circle+2);
+    points[3] = *(circle+0);
+    points[4] = - *(circle+3) * cos(direction) + *(circle+1);
+    points[5] = - *(circle+3) * sin(direction) + *(circle+2);
+
+    return points;
 }
