@@ -14,5 +14,10 @@ void setup(){
 }
 
 void loop(){
-  pCrab->moveInALine(0, -60);
+//  pCrab->moveInALine(0, -105);
+  for(int i = 0 ; i < 5 ; i++)
+    pCrab->rotate(-105, true);
+
+  for(int i = 0 ; i < 5 ; i++)
+    pCrab->rotate(-105, false);  
 }

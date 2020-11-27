@@ -16,3 +16,13 @@ void Mano::nomNom(){
     myStepper.step(-2*stepsPerRevolution);
     delay(5000);
 }
+
+void Mano::nomNomOpen(){
+    myStepper.step(2.3*stepsPerRevolution);
+    delay(1000);
+}
+
+void Mano::nomNomClose(){
+    myStepper.step(-2.3*stepsPerRevolution);
+    delay(1000);
+}

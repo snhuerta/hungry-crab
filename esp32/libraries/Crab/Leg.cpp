@@ -128,7 +128,7 @@ int * Leg::angFromPos(float x, float y, float z){
 float * Leg::mobilityCircle(float x){
     float alpha, beta, gamma, theta, ymin, ymax, z,d;
 
-    //0 -> centerx, 1 -> centery, 2-> centerz, 3->radius
+    //0 -> center , 1 -> center y, 2-> center z, 3->radius, 4 -> true center y
     static float circleParam [4];
 
     //These varaibles are asigned so the code is easier to read
@@ -164,16 +164,19 @@ float * Leg::mobilityCircle(float x){
     ymin = a;
 
     //Then the center of the circle of movement is calculated.
-    //This value is the one recieved given that the circle is on a plane
+    //This value is the one recieved given that the circle is on a plane, x component
     circleParam[0] = x;
-    //This value is an average of ymin and ymax but adjusted to give it some room
-    circleParam[1] = ( ( ymin * 1.5 ) + ymax ) / 2;
-    //Thjis value is equal to 0 because the circle must be centered
+    //This value is an average of ymin and ymax, this is the y component
+    circleParam[1] = ( ymin + ymax ) / 2;
+    //This value is equal to 0 because the circle must be centered on the leg's z plane
     circleParam[2] = 0;
 
-    //Then the radio
-    //This has another adjustment to give it room to work properly
-    circleParam[3] = ( ymax - ymin * 1.5 ) / 2 * 0.95;
+    //Then the radio is calculated
+    circleParam[3] = ( ymax - ymin ) / 2;
+
+    //These values must recieve adjustments so that some clearance is guaranteed
+    circleParam[3] = circleParam[3] * 0.9;
+    circleParam[1] = circleParam[1] + circleParam[3] / 0.9 * 0.05;
 
     return circleParam;
 }
@@ -186,7 +189,6 @@ float * Leg::traceLine(float direction, float x){
 
     //0 -> P1x, 1 -> P1y, 2 -> P1z
     //3 -> P2x, 4 -> P2y, 5 -> P2z
-    // static float points[6];
     float *points = new float[6];
 
     direction = direction * M_PI / 180;
@@ -201,3 +203,22 @@ float * Leg::traceLine(float direction, float x){
 
     return points;
 }
+
+
+// float * Leg::traceArc(float x){
+//     static float *circle;
+//     float rRot;
+
+//     circle = mobilityCircle(x);
+//     //0 -> P1x, 1 -> P1y, 2 -> P1z
+//     //3 -> P2x, 4 -> P2y, 5 -> P2z
+//     //6 -> radius of rotation circle
+//     float *points = new float[6];
+
+//     rRot = ;
+
+    
+
+//     return points;
+
+// }

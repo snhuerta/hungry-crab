@@ -12,6 +12,8 @@
 class Mano{
     public:
         void nomNom();
+        void nomNomOpen();
+        void nomNomClose();
 
         Mano();
 

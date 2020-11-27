@@ -34,6 +34,8 @@ class Leg {
 		int * angFromPos(float x, float y, float z);
 		float * mobilityCircle(float x);
 		float * traceLine(float direction, float x);
+		//TODO make a better traceArc function
+		//float * traceArc(float x);
 
 
 	private:

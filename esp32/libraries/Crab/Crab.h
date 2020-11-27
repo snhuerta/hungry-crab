@@ -27,6 +27,9 @@ class Crab {
         void updateLegsSyncPlease();
         void checkAllMotors();
         void moveInALine(float direction, float x);
+        void moveToAHeight(float height);
+        void rotate(float x, bool dir);
+        void grabSequence();
 };
 
 #endif
