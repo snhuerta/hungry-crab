@@ -36,7 +36,7 @@ class Leg {
 		float * traceLine(float direction, float x);
 		//TODO make a better traceArc function
 		//float * traceArc(float x);
-
+		int * determineLegStateForHeight(float x);
 
 	private:
 		uint8_t servoDriver[18] = {0,2,4,6,8,10,12,14,15,0,2,4,6,8,10,12,14,15};

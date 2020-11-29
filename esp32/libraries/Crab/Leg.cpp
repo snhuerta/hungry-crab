@@ -222,3 +222,17 @@ float * Leg::traceLine(float direction, float x){
 //     return points;
 
 // }
+
+int * Leg::determineLegStateForHeight(float x){
+
+    static float *circle;
+
+    //0 -> Pcx, 1 -> Pcy, 2 -> Pcz
+    int *angles = new int[6];
+
+    circle = mobilityCircle(x);
+
+    angles = angFromPos(*(circle+0), *(circle+1), *(circle+2));
+
+    return angles;
+}

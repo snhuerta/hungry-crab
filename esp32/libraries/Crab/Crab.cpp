@@ -1,7 +1,15 @@
 #include <Crab.h>
 
 Crab::Crab(){
-    
+    message = "";
+    moveFlag = false;
+    rotateFlag = false;
+    pickUpFlag = false;
+    stopFlag = false;
+    recievedDirection = 0;
+
+    SerialBT.begin("CrabFly");
+    Serial.begin(115200);
 }
 
 void Crab::updateLegsSyncPlease(){
@@ -107,6 +115,10 @@ void Crab::moveInALine(float direction, float x){
         }while(updatingLegs);        
     }
 
+    if(SerialBT.available()>0){
+        return;
+    }
+
     defPts1 = legs[1].traceLine( direction + ajusteAng[1], x + clearance);
     defPts3 = legs[3].traceLine( direction + ajusteAng[3], x + clearance);
     defPts5 = legs[5].traceLine( direction + ajusteAng[5], x + clearance);
@@ -135,11 +147,15 @@ void Crab::moveInALine(float direction, float x){
         }while(updatingLegs);        
     }
 
+    if(SerialBT.available()>0){
+        return;
+    }
+
     defPts0 = legs[0].traceLine( direction + ajusteAng[0], x + clearance);
     defPts1 = legs[1].traceLine( direction + ajusteAng[1], x );
-    defPts2 = legs[2].traceLine( direction + ajusteAng[2],x+clearance);
+    defPts2 = legs[2].traceLine( direction + ajusteAng[2], x + clearance);
     defPts3 = legs[3].traceLine( direction + ajusteAng[3], x );
-    defPts4 = legs[4].traceLine( direction + ajusteAng[4],x+clearance);
+    defPts4 = legs[4].traceLine( direction + ajusteAng[4], x + clearance);
     defPts5 = legs[5].traceLine( direction + ajusteAng[5], x );
 
     for(int j = pasos; j >= pasos/2 ; j--){
@@ -165,14 +181,27 @@ void Crab::moveInALine(float direction, float x){
             updateLegsSyncPlease();
         }while(updatingLegs);
     }
+
+    if(SerialBT.available()>0){
+        return;
+    }
 }
 
 //TODO finish moveToAHeight function
-void Crab::moveToAHeight(float height){
+void Crab::moveToAHeight(float x){
+    static int *angles;
 
+    angles = legs[0].determineLegStateForHeight(x);
+
+    for(int i = 0 ; i < 6 ; i++)
+        legs[i].setLegState(*(angles+0), *(angles+1), *(angles+2));
+    
+    do{
+        updateLegsSyncPlease();
+    }while(updatingLegs);
 }
 
-void Crab::rotate(float x, bool dir){
+void Crab::rotate(bool dir, float x){
     float *defPts0;
     float *defPts1;
     float *defPts2;
@@ -288,23 +317,109 @@ void Crab::rotate(float x, bool dir){
 }
 
 void Crab::grabSequence(){
-     checkAllMotors();
 
-    for(int i = 0; i < 6 ; i++)
-        legs[i].setLegState(90,105,70);
-
-    do{
-        updateLegsSyncPlease();  
-    }while(updatingLegs);
+    moveToAHeight(-105);
     
-        mano.nomNomOpen();
+    mano.nomNomOpen();
     
-    for(int i = 0; i < 6 ; i++)
-        legs[i].setLegState(90,66,110);
-    
-    do{
-        updateLegsSyncPlease(); 
-    }while(updatingLegs);
+    moveToAHeight(-45);
 
     mano.nomNomClose();
+
+    moveToAHeight(-105);
+
+    pickUpFlag = false;
+}
+
+void Crab::recieveMessage(){
+    while (SerialBT.available() > 0) {
+        incomingChar = SerialBT.read();
+        if ( incomingChar != '\n') {
+            message += String(incomingChar);
+        } else {
+            if (message[0] == 'a') {
+                if(message.substring(message.lastIndexOf(',')+1).toInt() == 1){
+                    moveFlag = true;
+                    rotateFlag = false;
+                    recievedDirection = -1 * message.substring(1,message.indexOf(',')).toFloat();
+
+                    Serial.println(recievedDirection);
+                }else{
+                    
+                }
+            }
+            if(message[0] == 'b'){
+                if(message[1] == '0'){
+                    Serial.println("PU");
+                    if (message.substring(message.indexOf(',')+1,message.lastIndexOf(','))=="true"){
+                        moveFlag = false;
+                        rotateFlag = false;
+                        pickUpFlag = true;
+
+                        Serial.println('1');
+                    }
+                    else{
+                        moveFlag = false;
+                        rotateFlag = false;
+                        Serial.println('0');
+                    }
+                }
+
+                if(message[1] == '1'){
+                    Serial.println("CCW");
+                    if (message.substring(message.indexOf(',')+1,message.lastIndexOf(','))=="true"){
+                        moveFlag = false;
+                        rotateFlag = true;
+                        recievedCW = false;
+
+                        Serial.println('1');
+                    }
+                    else{
+                        moveFlag = false;
+                        rotateFlag = false;
+                        
+                        Serial.println('0');
+                    }
+                }
+
+                if(message[1] == '2'){
+                    Serial.println("CW");
+                    if (message.substring(message.indexOf(',')+1,message.lastIndexOf(','))=="true"){
+                        moveFlag = false;
+                        rotateFlag = true;
+                        recievedCW = true;
+                        
+                        Serial.println('1');
+                    }
+                    else{
+                        moveFlag = false;
+                        rotateFlag = false;
+
+                        Serial.println('0');
+                    }
+                }
+
+                if(message[1] == '3'){
+                    Serial.println("STOP");
+                    if (message.substring(message.indexOf(',')+1,message.lastIndexOf(','))=="true"){
+                        moveFlag = false;
+                        rotateFlag = false;
+                        stopFlag = true;
+                        
+                        Serial.println('1');
+                    }
+                    else{
+                        Serial.println('0');
+                    }
+                }
+            }
+            message = "";
+        }
+    }
+}
+
+void Crab::stopSequence(){
+    moveToAHeight(-105);
+
+    stopFlag = false;
 }
